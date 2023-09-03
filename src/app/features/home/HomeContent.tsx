@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { diffWordsInSentence } from "./diff";
+import styles from "./HomeContent.module.css";
 
 type Correction = {
   revisedSentences: {
@@ -9,18 +11,6 @@ type Correction = {
     revisedReason: string;
   }[];
   revisedFullText: string;
-};
-
-const format = (correction: Correction) => {
-  const revisions: string[] = [];
-  for (const revision of correction.revisedSentences) {
-    const content = `原文: ${revision.originalSentence}\n修正文: ${revision.revisedSentence}\n説明: ${revision.revisedReason}`;
-    revisions.push(content);
-  }
-
-  return `#修正案\n ${
-    correction.revisedFullText
-  }\n\n #添削結果\n\n${revisions.join("\n\n")}`;
 };
 
 export const HomeContent = () => {
@@ -41,7 +31,6 @@ export const HomeContent = () => {
       });
 
       res.json().then((json) => {
-        console.log(json);
         setCorrection(json.correction);
       });
     } finally {
@@ -58,12 +47,64 @@ export const HomeContent = () => {
         onChange={(e) => {
           setText(e.target.value);
         }}
-        style={{ padding: 8, marginBottom: 8 }}
+        className={styles.textarea}
       />
-      <button onClick={correctEnglish}>添削</button>
+      <button className={styles.correctButton} onClick={correctEnglish}>
+        添削
+      </button>
       {isFetching && <div>添削中...</div>}
       {correction && (
-        <div style={{ whiteSpace: "pre-line" }}>{format(correction)}</div>
+        <section>
+          <div style={{ whiteSpace: "pre-line" }}>
+            <div># 修正案</div>
+            <p>{correction.revisedFullText}</p>
+          </div>
+          {correction.revisedSentences.map((revision, i) => {
+            const { originalSentenceBlocks, revisedSentenceBlocks } =
+              diffWordsInSentence(
+                revision.originalSentence,
+                revision.revisedSentence
+              );
+
+            return (
+              <div key={i} style={{ marginTop: 8 }}>
+                <p># 添削結果{i + 1}</p>
+                <p>
+                  原文:{" "}
+                  {originalSentenceBlocks.map((block, i) => {
+                    return (
+                      <span
+                        key={block.value}
+                        style={{
+                          color: block.removed ? "red" : undefined,
+                          textDecoration: block.removed
+                            ? "line-through"
+                            : undefined,
+                        }}
+                      >
+                        {block.value}
+                      </span>
+                    );
+                  })}
+                </p>
+                <p>
+                  修正文:{" "}
+                  {revisedSentenceBlocks.map((block) => {
+                    return (
+                      <span
+                        key={block.value}
+                        style={{ color: block.added ? "green" : undefined }}
+                      >
+                        {block.value}
+                      </span>
+                    );
+                  })}
+                </p>
+                <p>説明: {revision.revisedReason}</p>
+              </div>
+            );
+          })}
+        </section>
       )}
     </>
   );

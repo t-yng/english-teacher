@@ -1,7 +1,8 @@
 .main {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 6rem;
+  padding-top: 6rem;
+  margin: auto;
   min-height: 100vh;
+  max-width: 800px;
 }
