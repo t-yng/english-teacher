@@ -18,6 +18,7 @@ const createChainByZodSchema = () => {
       })
     ),
     revisedFullText: z.string(),
+    revisedFullTextInJapanese: z.string(),
   });
 
   return createExtractionChainFromZod(zodSchema, chatModel);
@@ -30,6 +31,7 @@ const createCorrectingEnglishPrompt = (englishText: string) => {
   return `あなたは英語の先生です。
   与えられた英語の文章の誤りを指摘して修正してください。
   また何故誤っているかの理由を日本語で説明してください。
+  修正した文章の全体を日本語に翻訳してください。
 
   ## 英語の文章
   ${englishText}

@@ -11,6 +11,7 @@ type Correction = {
     revisedReason: string;
   }[];
   revisedFullText: string;
+  revisedFullTextInJapanese: string;
 };
 
 export const HomeContent = () => {
@@ -58,6 +59,9 @@ export const HomeContent = () => {
           <div style={{ whiteSpace: "pre-line" }}>
             <div># 修正案</div>
             <p>{correction.revisedFullText}</p>
+            <br />
+            <div># 修正案（日本語）</div>
+            <p>{correction.revisedFullTextInJapanese}</p>
           </div>
           {correction.revisedSentences.map((revision, i) => {
             const { originalSentenceBlocks, revisedSentenceBlocks } =
