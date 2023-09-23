@@ -8,10 +8,11 @@ type Correction = {
   revisedSentences: {
     originalSentence: string;
     revisedSentence: string;
-    revisedReason: string;
+    explanation: string;
   }[];
   revisedFullText: string;
   revisedFullTextInJapanese: string;
+  isPerfect: boolean;
 };
 
 export const HomeContent = () => {
@@ -63,51 +64,58 @@ export const HomeContent = () => {
             <div># 修正案（日本語）</div>
             <p>{correction.revisedFullTextInJapanese}</p>
           </div>
-          {correction.revisedSentences.map((revision, i) => {
-            const { originalSentenceBlocks, revisedSentenceBlocks } =
-              diffWordsInSentence(
-                revision.originalSentence,
-                revision.revisedSentence
-              );
+          {correction.isPerfect && (
+            <div>
+              <p># 添削結果</p>
+              <p>英文は完璧です🎉</p>
+            </div>
+          )}
+          {!correction.isPerfect &&
+            correction.revisedSentences.map((revision, i) => {
+              const { originalSentenceBlocks, revisedSentenceBlocks } =
+                diffWordsInSentence(
+                  revision.originalSentence,
+                  revision.revisedSentence
+                );
 
-            return (
-              <div key={i} style={{ marginTop: 8 }}>
-                <p># 添削結果{i + 1}</p>
-                <p>
-                  原文:{" "}
-                  {originalSentenceBlocks.map((block, i) => {
-                    return (
-                      <span
-                        key={block.value}
-                        style={{
-                          color: block.removed ? "red" : undefined,
-                          textDecoration: block.removed
-                            ? "line-through"
-                            : undefined,
-                        }}
-                      >
-                        {block.value}
-                      </span>
-                    );
-                  })}
-                </p>
-                <p>
-                  修正文:{" "}
-                  {revisedSentenceBlocks.map((block) => {
-                    return (
-                      <span
-                        key={block.value}
-                        style={{ color: block.added ? "green" : undefined }}
-                      >
-                        {block.value}
-                      </span>
-                    );
-                  })}
-                </p>
-                <p>説明: {revision.revisedReason}</p>
-              </div>
-            );
-          })}
+              return (
+                <div key={i} style={{ marginTop: 8 }}>
+                  <p># 添削結果{i + 1}</p>
+                  <p>
+                    原文:{" "}
+                    {originalSentenceBlocks.map((block, i) => {
+                      return (
+                        <span
+                          key={block.value}
+                          style={{
+                            color: block.removed ? "red" : undefined,
+                            textDecoration: block.removed
+                              ? "line-through"
+                              : undefined,
+                          }}
+                        >
+                          {block.value}
+                        </span>
+                      );
+                    })}
+                  </p>
+                  <p>
+                    修正文:{" "}
+                    {revisedSentenceBlocks.map((block) => {
+                      return (
+                        <span
+                          key={block.value}
+                          style={{ color: block.added ? "green" : undefined }}
+                        >
+                          {block.value}
+                        </span>
+                      );
+                    })}
+                  </p>
+                  <p>説明: {revision.explanation}</p>
+                </div>
+              );
+            })}
         </section>
       )}
     </>
