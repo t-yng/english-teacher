@@ -19,9 +19,6 @@ FROM base as build
 ARG OPENAI_API_KEY
 ENV OPENAI_API_KEY ${OPENAI_API_KEY}
 
-RUN echo "OPENAI_API_KEY"
-RUN echo $OPENAI_API_KEY
-
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
     apt-get install -y build-essential pkg-config python-is-python3
