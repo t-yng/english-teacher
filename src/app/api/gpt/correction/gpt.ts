@@ -5,11 +5,11 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const systemPrompt = `あなたは英語の先生です。
-以下の指示に従って英語の文章を日本語で添削してください。
+以下の指示に従って英語の文章を添削してください。
 
 ## 指示
 ・各英文の誤りを指摘して修正してください。
-・なぜ間違っているかの理由を説明してください。
+・なぜ間違っているかの理由を日本語で説明してください。
 ・修正した文章の全体を日本語に翻訳してください。
 `;
 
