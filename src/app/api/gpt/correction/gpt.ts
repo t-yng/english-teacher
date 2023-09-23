@@ -1,44 +1,74 @@
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { createExtractionChainFromZod } from "langchain/chains";
+import { OpenAI } from "openai";
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
-const chatModel = new ChatOpenAI({
-  modelName: "gpt-4-0613",
-  temperature: 0,
-  openAIApiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const createChainByZodSchema = () => {
-  const zodSchema = z.object({
-    revisedSentences: z.array(
+const systemPrompt = `あなたは英語の先生です。
+以下の指示に従って英語の文章を日本語で添削してください。
+
+## 指示
+・各英文の誤りを指摘して修正してください。
+・なぜ間違っているかの理由を説明してください。
+・修正した文章の全体を日本語に翻訳してください。
+`;
+
+const zodCorrectEnglishSchema = z.object({
+  revisedSentences: z
+    .array(
       z.object({
         originalSentence: z.string(),
         revisedSentence: z.string(),
-        revisedReason: z.string(),
+        explanation: z.string(),
       })
-    ),
-    revisedFullText: z.string(),
-    revisedFullTextInJapanese: z.string(),
+    )
+    .optional(),
+  revisedFullText: z.string(),
+  revisedFullTextInJapanese: z.string(),
+  isPerfect: z.boolean(),
+});
+
+const jsonSchema = zodToJsonSchema(
+  zodCorrectEnglishSchema,
+  "correctEnglishSchema"
+);
+
+const correctEnglishByChatGpt = async (englishText: string) => {
+  const result = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: englishText,
+      },
+    ],
+    // model: "gpt-3.5-turbo-0613",
+    model: "gpt-4-0613",
+    function_call: {
+      name: "correctEnglish",
+    },
+    functions: [
+      {
+        name: "correctEnglish",
+        description: "correct english sentences result",
+        parameters: jsonSchema.definitions!.correctEnglishSchema,
+      },
+    ],
   });
 
-  return createExtractionChainFromZod(zodSchema, chatModel);
-};
+  if (
+    result.choices.length === 0 ||
+    result.choices[0].message.function_call == null
+  ) {
+    throw new Error("英語の添削に失敗しました");
+  }
 
-const chain = createChainByZodSchema();
-
-const createCorrectingEnglishPrompt = (englishText: string) => {
-  // WARNING: プロンプトの内容次第でFunctionCallがされなくなるので、内容の修正は要注意
-  return `あなたは英語の先生です。
-  与えられた英語の文章の誤りを指摘して修正してください。
-  また何故誤っているかの理由を日本語で説明してください。
-  修正した文章の全体を日本語に翻訳してください。
-
-  ## 英語の文章
-  ${englishText}
-`;
+  return JSON.parse(result.choices[0].message.function_call.arguments);
 };
 
 export const correctEnglishText = (englishText: string) => {
-  const prompt = createCorrectingEnglishPrompt(englishText);
-  return chain.run(prompt);
+  return correctEnglishByChatGpt(englishText);
 };
