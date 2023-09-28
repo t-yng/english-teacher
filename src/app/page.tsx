@@ -1,10 +1,10 @@
 import styles from "./page.module.css";
-import { HomeContent } from "./features/home/HomeContent";
+import { Home } from "./_components";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <main className={styles.main}>
-      <HomeContent />
+      <Home />
     </main>
   );
 }
