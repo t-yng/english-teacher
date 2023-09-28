@@ -1,14 +1,24 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { CorrectionMessage } from "./CorrectionMessage";
 import { ChatMessageList } from "./ChatMessageList";
 
 export const Chat = () => {
-  const [inputText] = useState(() => sessionStorage.getItem("inputText") ?? "");
-  const [messages, setMessages] = useState<ReactNode[]>(() => {
-    return [`# 英文\n${inputText}`, "添削中..."];
-  });
+  const [inputText, setInputText] = useState("");
+  const [messages, setMessages] = useState<ReactNode[]>([]);
+
+  useLayoutEffect(() => {
+    const text = window.sessionStorage.getItem("inputText") ?? "";
+    setInputText(text);
+    setMessages([`# 英文\n${text}`, "添削中..."]);
+  }, []);
 
   const correctEnglish = useCallback(async (text: string) => {
     const res = await fetch("/api/gpt/correction", {
