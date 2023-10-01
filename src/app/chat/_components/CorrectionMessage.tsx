@@ -1,16 +1,6 @@
 import { FC } from "react";
 import { diffWordsInSentence } from "./diff";
-
-type CorrectionResult = {
-  revisedSentences: {
-    originalSentence: string;
-    revisedSentence: string;
-    explanation: string;
-  }[];
-  revisedFullText: string;
-  revisedFullTextInJapanese: string;
-  isPerfect: boolean;
-};
+import { CorrectionResult } from "@/app/_models/Correction";
 
 type CorrectionMessageProps = {
   correctionResult: CorrectionResult;

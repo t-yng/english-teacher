@@ -23,6 +23,14 @@ export const ChatMessageList: FC<ChatMessageListProps> = ({ messages }) => {
           <div className={styles.message}>{message}</div>
         </div>
       ))}
+      <div
+        key={"space-chat-message"}
+        className={clsx(
+          styles.chat,
+          (messages.length + 1) % 2 == 1 && styles.chatWhite,
+          (messages.length + 1) % 2 === 0 && styles.chatGray
+        )}
+      />
     </div>
   );
 };
