@@ -13,8 +13,12 @@
   white-space: pre-wrap;
 }
 
+.chat:first-of-type {
+  border-top: none;
+}
+
 .chat:last-of-type {
-  border-bottom: 1px solid #d9d9e3;
+  height: 8rem;
 }
 
 .chatWhite {

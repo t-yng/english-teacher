@@ -1,0 +1,14 @@
+.form {
+  width: 100%;
+  max-width: 700px;
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 0px 15px 0px;
+}
+
+.chatBox {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #d9d9e3;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 16px;
+}

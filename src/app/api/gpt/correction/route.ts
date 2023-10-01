@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { correctEnglishText } from "./gpt";
+import { correctEnglishText } from "@/app/api/gpt";
 
 export async function POST(request: Request) {
   const res = await request.json();

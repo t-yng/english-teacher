@@ -2,6 +2,9 @@ import { OpenAI } from "openai";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
+// const MODEL = "gpt-3.5-turbo-0613";
+const CHAT_GPT_MODEL = "gpt-4-0613";
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const systemPrompt = `あなたは英語の先生です。
@@ -45,8 +48,7 @@ const correctEnglishByChatGpt = async (englishText: string) => {
         content: englishText,
       },
     ],
-    // model: "gpt-3.5-turbo-0613",
-    model: "gpt-4-0613",
+    model: CHAT_GPT_MODEL,
     function_call: {
       name: "correctEnglish",
     },
@@ -71,4 +73,32 @@ const correctEnglishByChatGpt = async (englishText: string) => {
 
 export const correctEnglishText = (englishText: string) => {
   return correctEnglishByChatGpt(englishText);
+};
+
+export const askQuestion = async (messages: string[]) => {
+  const postMessages = [
+    {
+      role: "system" as const,
+      content: systemPrompt,
+    },
+    ...messages.map<{ role: "user" | "assistant"; content: string }>(
+      (message, i) => {
+        return {
+          role: i % 2 === 0 ? "user" : "assistant",
+          content: message,
+        };
+      }
+    ),
+  ];
+
+  const result = await openai.chat.completions.create({
+    messages: postMessages,
+    model: CHAT_GPT_MODEL,
+  });
+
+  if (result.choices.length === 0) {
+    throw new Error("英語の添削に失敗しました");
+  }
+
+  return result.choices[0].message.content;
 };
