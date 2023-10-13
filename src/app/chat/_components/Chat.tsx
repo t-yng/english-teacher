@@ -46,8 +46,61 @@ export const Chat = () => {
     return result.correction;
   }, []);
 
+  /**
+   * ストリーミング形式のレスポンスを処理して質問の回答を表示する
+   */
+  const handleStreamAnswerResponse = useCallback((res: Response) => {
+    // ストリームのリーダーを取得
+    // TextDecoderStreamを通して、Uint8Arrayを文字列に変換する
+    const reader = res.body?.pipeThrough(new TextDecoderStream()).getReader();
+    if (!reader) return;
+
+    // リーダーからデータを読み込む
+    const read = async ({ firstRead }: { firstRead: boolean }) => {
+      const { done, value } = await reader.read();
+      if (done) return;
+      // 読み込んだイベントデータから、dataとeventを抽出する
+      const result = value.split("\n").reduce(
+        (acc, line) => {
+          if (line.startsWith("data: ")) {
+            acc["data"] = line.replace("data: ", "");
+            return acc;
+          } else if (line.startsWith("event: ")) {
+            acc["event"] = line.replace("event: ", "");
+            return acc;
+          }
+
+          return acc;
+        },
+        { data: "", event: null } as { data: string; event: string | null }
+      );
+
+      // 回答を逐次更新して表示
+      setMessages((messages) => {
+        const answerMessage = messages[messages.length - 1];
+        const answer = firstRead
+          ? result.data
+          : answerMessage.text + result.data;
+
+        return messages.with(-1, {
+          text: answer,
+        });
+      });
+
+      read({ firstRead: false });
+    };
+
+    read({ firstRead: true });
+  }, []);
+
+  /**
+   * 質問を送信して回答をリクエストする
+   */
   const askQuestion = useCallback(
     async (question: string) => {
+      const WAITING_TEXT = "思考中...";
+
+      // レスポンスが返ってくるまでの待機テキストを表示
       setMessages((messages) => {
         return [
           ...messages,
@@ -55,28 +108,26 @@ export const Chat = () => {
             text: question,
           },
           {
-            text: "回答中...",
+            text: WAITING_TEXT,
           },
         ];
       });
 
+      // 回答をリクエスト
       const res = await fetch("/api/gpt/question", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           messages: [...messages.map((m) => m.text), question],
         }),
       });
-      const result = await res.json();
 
-      setMessages((messages) => {
-        return messages.with(-1, {
-          text: result.answer,
-        });
-      });
-
-      return result.answer;
+      // ストリーミング形式のレスポンスを処理
+      handleStreamAnswerResponse(res);
     },
-    [messages]
+    [handleStreamAnswerResponse, messages]
   );
 
   useEffect(() => {
