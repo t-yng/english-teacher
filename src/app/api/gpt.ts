@@ -75,7 +75,11 @@ export const correctEnglishText = (englishText: string) => {
   return correctEnglishByChatGpt(englishText);
 };
 
-export const askQuestion = async (messages: string[]) => {
+export const askQuestion = async (
+  messages: string[],
+  onStreamChunk: (message: string) => void,
+  onStreamEnd: () => void
+) => {
   const postMessages = [
     {
       role: "system" as const,
@@ -91,14 +95,15 @@ export const askQuestion = async (messages: string[]) => {
     ),
   ];
 
-  const result = await openai.chat.completions.create({
+  const stream = await openai.chat.completions.create({
     messages: postMessages,
     model: CHAT_GPT_MODEL,
+    stream: true,
   });
 
-  if (result.choices.length === 0) {
-    throw new Error("英語の添削に失敗しました");
+  for await (const chunk of stream) {
+    onStreamChunk(chunk.choices[0].delta.content ?? "");
   }
 
-  return result.choices[0].message.content;
+  onStreamEnd();
 };
