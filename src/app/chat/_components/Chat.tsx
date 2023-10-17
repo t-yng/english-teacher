@@ -57,6 +57,7 @@ export const Chat = () => {
 
     // リーダーからデータを読み込む
     const read = async ({ firstRead }: { firstRead: boolean }) => {
+      // TODO: net:ERR_HTTP2_PROTOCOL_ERROR が発生場合があるので、例外処理をしてリトライ可能にする
       const { done, value } = await reader.read();
       if (done) return;
       // 読み込んだイベントデータから、dataとeventを抽出する
