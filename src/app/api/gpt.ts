@@ -38,6 +38,8 @@ const jsonSchema = zodToJsonSchema(
 
 const correctEnglishByChatGpt = async (englishText: string) => {
   const result = await openai.chat.completions.create({
+    // 添削の度に結果が変わると分かりづらくなるので、同じ添削結果を返すようにtemperatureを0に設定
+    temperature: 0,
     messages: [
       {
         role: "system",
