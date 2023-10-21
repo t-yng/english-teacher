@@ -10,7 +10,8 @@ export async function POST(req: Request) {
     (message) => {
       writer.write(`data: ${message}\n\n`);
     },
-    () => writer.close()
+    () => writer.close(),
+    (e) => writer.abort(e)
   );
 
   return new Response(responseStream.readable, {

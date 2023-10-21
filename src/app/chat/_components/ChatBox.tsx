@@ -29,7 +29,6 @@ export const ChatBox: FC<ChatBoxProps> = ({ onSubmit }) => {
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
-      console.log("handleSubmit");
       e.preventDefault();
       onSubmit?.(text);
       setText("");

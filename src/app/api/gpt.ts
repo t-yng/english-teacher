@@ -80,7 +80,8 @@ export const correctEnglishText = (englishText: string) => {
 export const askQuestion = async (
   messages: string[],
   onStreamChunk: (message: string) => void,
-  onStreamEnd: () => void
+  onStreamEnd: () => void,
+  onError: (error: Error) => void
 ) => {
   const postMessages = [
     {
@@ -103,9 +104,18 @@ export const askQuestion = async (
     stream: true,
   });
 
-  for await (const chunk of stream) {
-    onStreamChunk(chunk.choices[0].delta.content ?? "");
-  }
+  try {
+    for await (const chunk of stream) {
+      onStreamChunk(chunk.choices[0].delta.content ?? "");
+    }
 
-  onStreamEnd();
+    onStreamEnd();
+  } catch (e) {
+    console.error(e);
+    if (e instanceof Error) {
+      onError(e);
+    } else {
+      onError(new Error("質問の回答中に予期しないエラーが発生しました"));
+    }
+  }
 };
