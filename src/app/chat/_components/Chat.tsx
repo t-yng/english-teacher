@@ -33,6 +33,7 @@ const createCorrectionText = (correction: CorrectionResult) => {
 
 export const Chat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [chatError, setChatError] = useState<Error | null>(null);
 
   const correctEnglish = useCallback(async (text: string) => {
     const res = await fetch("/api/gpt/correction", {
@@ -58,37 +59,42 @@ export const Chat = () => {
     // リーダーからデータを読み込む
     const read = async ({ firstRead }: { firstRead: boolean }) => {
       // TODO: net:ERR_HTTP2_PROTOCOL_ERROR が発生場合があるので、例外処理をしてリトライ可能にする
-      const { done, value } = await reader.read();
-      if (done) return;
-      // 読み込んだイベントデータから、dataとeventを抽出する
-      const result = value.split("\n").reduce(
-        (acc, line) => {
-          if (line.startsWith("data: ")) {
-            acc["data"] = line.replace("data: ", "");
+      try {
+        const { done, value } = await reader.read();
+        if (done) return;
+        // 読み込んだイベントデータから、dataとeventを抽出する
+        const result = value.split("\n").reduce(
+          (acc, line) => {
+            if (line.startsWith("data: ")) {
+              acc["data"] = line.replace("data: ", "");
+              return acc;
+            } else if (line.startsWith("event: ")) {
+              acc["event"] = line.replace("event: ", "");
+              return acc;
+            }
+
             return acc;
-          } else if (line.startsWith("event: ")) {
-            acc["event"] = line.replace("event: ", "");
-            return acc;
-          }
+          },
+          { data: "", event: null } as { data: string; event: string | null }
+        );
 
-          return acc;
-        },
-        { data: "", event: null } as { data: string; event: string | null }
-      );
+        // 回答を逐次更新して表示
+        setMessages((messages) => {
+          const answerMessage = messages[messages.length - 1];
+          const answer = firstRead
+            ? result.data
+            : answerMessage.text + result.data;
 
-      // 回答を逐次更新して表示
-      setMessages((messages) => {
-        const answerMessage = messages[messages.length - 1];
-        const answer = firstRead
-          ? result.data
-          : answerMessage.text + result.data;
-
-        return messages.with(-1, {
-          text: answer,
+          return messages.with(-1, {
+            text: answer,
+          });
         });
-      });
 
-      read({ firstRead: false });
+        read({ firstRead: false });
+      } catch (e) {
+        console.error(e);
+        setChatError(e as Error);
+      }
     };
 
     read({ firstRead: true });
