@@ -33,7 +33,8 @@ const createCorrectionText = (correction: CorrectionResult) => {
 
 export const Chat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chatError, setChatError] = useState<Error | null>(null);
+  const [askQuestionError, setAskQuestionError] = useState<Error | null>(null);
+  const [question, setQuestion] = useState<string>("");
 
   const correctEnglish = useCallback(async (text: string) => {
     const res = await fetch("/api/gpt/correction", {
@@ -92,8 +93,8 @@ export const Chat = () => {
 
         read({ firstRead: false });
       } catch (e) {
-        console.error(e);
-        setChatError(e as Error);
+        console.error(`質問に対する回答の取得中にエラーが発生しました: ${e}`);
+        setAskQuestionError(e as Error);
       }
     };
 
@@ -105,6 +106,7 @@ export const Chat = () => {
    */
   const askQuestion = useCallback(
     async (question: string) => {
+      setQuestion(question);
       const WAITING_TEXT = "思考中...";
 
       // レスポンスが返ってくるまでの待機テキストを表示
@@ -121,21 +123,36 @@ export const Chat = () => {
       });
 
       // 回答をリクエスト
-      const res = await fetch("/api/gpt/question", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages.map((m) => m.text), question],
-        }),
-      });
-
-      // ストリーミング形式のレスポンスを処理
-      handleStreamAnswerResponse(res);
+      try {
+        const res = await fetch("/api/gpt/question", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [...messages.map((m) => m.text), question],
+          }),
+        });
+        // ストリーミング形式のレスポンスを処理
+        handleStreamAnswerResponse(res);
+      } catch (e) {
+        console.error(`質問の回答リクエストに失敗しました: ${e}`);
+        setAskQuestionError(e as Error);
+      }
     },
     [handleStreamAnswerResponse, messages]
   );
+
+  /**
+   * 回答の再生成をリクエストする
+   */
+  const reAskQuestion = useCallback(() => {
+    setAskQuestionError(null);
+    setMessages((messages) => {
+      return messages.slice(0, -2);
+    });
+    askQuestion(question);
+  }, [askQuestion, question]);
 
   useEffect(() => {
     // メッセージの一覧が更新されたら、メッセージが見えるようにスクロールする
@@ -170,7 +187,11 @@ export const Chat = () => {
 
   return (
     <div>
-      <ChatMessageList messages={messages.map((m) => m.node ?? m.text)} />
+      <ChatMessageList
+        messages={messages.map((m) => m.node ?? m.text)}
+        askQuestionError={askQuestionError}
+        onClickReAskQuestion={reAskQuestion}
+      />
       <div className={styles.chatBoxContainer}>
         <ChatBox onSubmit={askQuestion} />
       </div>
