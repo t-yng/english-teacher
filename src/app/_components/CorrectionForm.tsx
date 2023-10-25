@@ -25,7 +25,6 @@ export const CorrectionForm: FC<CorrectionFormProps> = ({
     <form onSubmit={handleSubmit} className={clsx(styles.form, className)}>
       <textarea
         value={text}
-        cols={70}
         rows={7}
         onChange={(e) => {
           setText(e.target.value);
