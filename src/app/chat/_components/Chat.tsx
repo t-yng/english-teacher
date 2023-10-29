@@ -58,19 +58,28 @@ export const Chat = () => {
     if (!reader) return;
 
     // リーダーからデータを読み込む
+    // REFACTOR: 処理用のクラスを別途作成する
     const read = async ({ firstRead }: { firstRead: boolean }) => {
       // TODO: net:ERR_HTTP2_PROTOCOL_ERROR が発生場合があるので、例外処理をしてリトライ可能にする
       try {
         const { done, value } = await reader.read();
-        if (done) return;
+        if (done) {
+          reader.releaseLock();
+          return;
+        }
         // 読み込んだイベントデータから、dataとeventを抽出する
-        const result = value.split("\n").reduce(
-          (acc, line) => {
-            if (line.startsWith("data: ")) {
-              acc["data"] = line.replace("data: ", "");
+        const result = value.split(/\n\n/).reduce(
+          (acc, message) => {
+            if (message.startsWith("data: ") && message !== "data: [DONE]") {
+              // data: test1\ndata:test2 と複数行のデータが送られてくる場合を考慮
+              acc["data"] += message
+                .split("\n")
+                .filter((line) => line !== "data: [DONE]")
+                .map((line) => line.replace("data: ", ""))
+                .join("\n");
               return acc;
-            } else if (line.startsWith("event: ")) {
-              acc["event"] = line.replace("event: ", "");
+            } else if (message.startsWith("event: ")) {
+              acc["event"] = message.replace("event: ", "");
               return acc;
             }
 
