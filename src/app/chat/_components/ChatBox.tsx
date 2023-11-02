@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { IoSend } from "react-icons/io5";
 import styles from "./ChatBox.module.css";
 import { useAutoResize } from "./useAutoResize";
 
@@ -67,6 +68,9 @@ export const ChatBox: FC<ChatBoxProps> = ({ onSubmit }) => {
         onKeyDown={handleKeyDown}
         ref={textareaRef}
       />
+      <button type="submit" className={styles.submitButton}>
+        <IoSend />
+      </button>
     </form>
   );
 };
