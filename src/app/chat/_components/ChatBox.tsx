@@ -21,7 +21,7 @@ export const ChatBox: FC<ChatBoxProps> = ({ onSubmit }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");
-  const { autoResize } = useAutoResize();
+  const { autoResize, resetSize } = useAutoResize();
 
   useLayoutEffect(() => {
     if (!textareaRef.current) return;
@@ -33,8 +33,11 @@ export const ChatBox: FC<ChatBoxProps> = ({ onSubmit }) => {
       e.preventDefault();
       onSubmit?.(text);
       setText("");
+      if (textareaRef.current) {
+        resetSize(textareaRef.current);
+      }
     },
-    [onSubmit, text]
+    [onSubmit, resetSize, text]
   );
 
   const handleChangeText = useCallback(
