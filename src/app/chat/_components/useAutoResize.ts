@@ -6,5 +6,9 @@ export const useAutoResize = () => {
     textarea.style.height = textarea.scrollHeight + 4 + "px";
   }, []);
 
-  return { autoResize };
+  const resetSize = useCallback((textarea: HTMLElement) => {
+    textarea.style.height = "auto";
+  }, []);
+
+  return { autoResize, resetSize };
 };
