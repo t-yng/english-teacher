@@ -1,40 +1,34 @@
 import { OpenAI } from "openai";
-import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 
-// const MODEL = "gpt-3.5-turbo-0613";
-const CHAT_GPT_MODEL = "gpt-4-0613";
+const CHAT_GPT_MODEL = "gpt-4-1106-preview";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const systemPrompt = `あなたは英語の先生です。
 以下の指示に従って英語の文章を添削してください。
+結果はデータモデルに従ったJSON形式で出力してください。
 
 ## 指示
 ・各英文の誤りを指摘して修正してください。
 ・なぜ間違っているかの理由を日本語で説明してください。
 ・修正した文章の全体を日本語に翻訳してください。
+
+## データモデル
+"""
+{
+  "revisedSentences": [
+    {
+      "originalSentence": "<修正前のテキスト>",
+      "revisedSentence": "<修正後のテキスト>",
+      "explanation": "<修正の理由>"
+    }
+  ],
+  "revisedFullText": "<修正後の全文>",
+  "revisedFullTextInJapanese": "<修正後の全文の日本語訳>",
+  "isPerfect": "<修正前の文章は変更箇所が存在しないか>"
+}
+"""
 `;
-
-const zodCorrectEnglishSchema = z.object({
-  revisedSentences: z
-    .array(
-      z.object({
-        originalSentence: z.string(),
-        revisedSentence: z.string(),
-        explanation: z.string(),
-      })
-    )
-    .optional(),
-  revisedFullText: z.string(),
-  revisedFullTextInJapanese: z.string(),
-  isPerfect: z.boolean(),
-});
-
-const jsonSchema = zodToJsonSchema(
-  zodCorrectEnglishSchema,
-  "correctEnglishSchema"
-);
 
 const correctEnglishByChatGpt = async (englishText: string) => {
   const result = await openai.chat.completions.create({
@@ -51,26 +45,19 @@ const correctEnglishByChatGpt = async (englishText: string) => {
       },
     ],
     model: CHAT_GPT_MODEL,
-    function_call: {
-      name: "correctEnglish",
+    response_format: {
+      type: "json_object",
     },
-    functions: [
-      {
-        name: "correctEnglish",
-        description: "correct english sentences result",
-        parameters: jsonSchema.definitions!.correctEnglishSchema,
-      },
-    ],
   });
 
   if (
     result.choices.length === 0 ||
-    result.choices[0].message.function_call == null
+    result.choices[0].message.content == null
   ) {
     throw new Error("英語の添削に失敗しました");
   }
 
-  return JSON.parse(result.choices[0].message.function_call.arguments);
+  return JSON.parse(result.choices[0].message.content);
 };
 
 export const correctEnglishText = (englishText: string) => {

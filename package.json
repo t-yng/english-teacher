@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "fly deploy"
+    "playground:gpt": "bun playground/gpt.ts"
   },
   "dependencies": {
     "@types/diff": "^5.0.3",
@@ -19,13 +19,11 @@
     "eslint": "8.48.0",
     "eslint-config-next": "13.4.19",
     "next": "13.4.19",
-    "openai": "^4.10.0",
+    "openai": "^4.20.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.11.0",
-    "typescript": "5.2.2",
-    "zod": "^3.22.2",
-    "zod-to-json-schema": "^3.21.4"
+    "typescript": "5.2.2"
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.8",
