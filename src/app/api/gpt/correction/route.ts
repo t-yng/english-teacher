@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { correctEnglishText } from "@/app/api/gpt";
 
 export async function POST(request: Request) {
-  const res = await request.json();
-  const correction = await correctEnglishText(res.text);
-  return NextResponse.json({ correction });
+  const body = await request.json();
+
+  try {
+    const correction = await correctEnglishText(body.text);
+    return NextResponse.json({ correction });
+  } catch (error) {
+    console.error(error);
+    return new Response("英語の添削中にエラーが発生しました", {
+      status: 500,
+    });
+  }
 }
