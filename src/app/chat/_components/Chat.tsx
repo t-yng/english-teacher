@@ -11,18 +11,18 @@ import { CorrectionMessage } from "./CorrectionMessage";
 import { ChatMessageList } from "./ChatMessageList";
 import { ChatBox } from "./ChatBox";
 import styles from "./Chat.module.css";
-import { CorrectionResult } from "@/app/_models/Correction";
+import { CorrectionTextResult } from "@/app/type";
 
 type ChatMessage = {
   text: string;
   node?: ReactNode;
 };
 
-const createCorrectionText = (correction: CorrectionResult) => {
+const createCorrectionText = (correction: CorrectionTextResult) => {
   return [
     `# 修正案\n${correction.revisedFullText}`,
     `# 修正案（日本語）\n${correction.revisedFullTextInJapanese}`,
-    correction.isPerfect && "# 添削結果\n英文は完璧です🎉",
+    correction.revisedSentences.length === 0 && "# 添削結果\n英文は完璧です🎉",
     ...correction.revisedSentences.map((revision, i) => {
       return `# 添削結果${i + 1}\n原文: ${revision.originalSentence}\n修正文: ${
         revision.revisedSentence

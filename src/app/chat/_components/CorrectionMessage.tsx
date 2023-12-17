@@ -1,9 +1,9 @@
 import { FC } from "react";
 import { diffWordsInSentence } from "./diff";
-import { CorrectionResult } from "@/app/_models/Correction";
+import { CorrectionTextResult } from "@/app/type";
 
 type CorrectionMessageProps = {
-  correctionResult: CorrectionResult;
+  correctionResult: CorrectionTextResult;
 };
 
 export const CorrectionMessage: FC<CorrectionMessageProps> = ({
@@ -19,13 +19,13 @@ export const CorrectionMessage: FC<CorrectionMessageProps> = ({
         <p>{correctionResult.revisedFullTextInJapanese}</p>
         <br />
       </div>
-      {correctionResult.isPerfect && (
+      {correctionResult.revisedSentences.length === 0 && (
         <div>
           <p># 添削結果</p>
           <p>英文は完璧です🎉</p>
         </div>
       )}
-      {!correctionResult.isPerfect &&
+      {correctionResult.revisedSentences.length > 0 &&
         correctionResult.revisedSentences.map((revision, i) => {
           const { originalSentenceBlocks, revisedSentenceBlocks } =
             diffWordsInSentence(
