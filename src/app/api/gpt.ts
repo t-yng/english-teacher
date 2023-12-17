@@ -1,4 +1,5 @@
 import { OpenAI } from "openai";
+import { CorrectionTextResult } from "@/app/type";
 
 const CHAT_GPT_MODEL = "gpt-4-1106-preview";
 
@@ -24,13 +25,14 @@ const systemPrompt = `あなたは英語の先生です。
     }
   ],
   "revisedFullText": "<修正後の全文>",
-  "revisedFullTextInJapanese": "<修正後の全文の日本語訳>",
-  "isPerfect": "<修正前の文章は変更箇所が存在しないか>"
+  "revisedFullTextInJapanese": "<修正後の全文の日本語訳>"
 }
 """
 `;
 
-const correctEnglishByChatGpt = async (englishText: string) => {
+const correctEnglishByChatGpt = async (
+  englishText: string
+): Promise<CorrectionTextResult> => {
   const result = await openai.chat.completions.create({
     // 添削の度に結果が変わると分かりづらくなるので、同じ添削結果を返すようにtemperatureを0に設定
     temperature: 0,
@@ -70,6 +72,9 @@ export const askQuestion = async (
   onStreamEnd: () => void,
   onError: (error: Error) => void
 ) => {
+  const systemPrompt = `あなたは英語の先生です。
+生徒からの添削結果や英語に関する質問に対して、回答をしてください。
+`;
   const postMessages = [
     {
       role: "system" as const,
