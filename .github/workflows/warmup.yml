@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Send GET Request
         run: |
-          curl https://english-teacher-t08i.onrender.com/
+          curl ${{ secrets.ENGLISH_TEACHRE_URL }}
