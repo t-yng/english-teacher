@@ -1,0 +1,14 @@
+# render.comのコールドスリープを防ぐために10分ごとにGETリクエストを送る
+name: Warmup HTTP Request
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+
+jobs:
+  http_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send GET Request
+        run: |
+          curl https://english-teacher-t08i.onrender.com/
