@@ -1,32 +1,40 @@
 {
-  "name": "language-teacher",
-  "version": "0.1.0",
-  "private": true,
+  "name": "english-teacher",
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest",
+    "lint": "prettier --check . && eslint .",
+    "format": "prettier --write .",
     "playground:gpt": "bun playground/gpt.ts"
   },
   "dependencies": {
-    "@types/diff": "^5.0.3",
-    "@types/node": "20.5.8",
-    "@types/react": "18.2.21",
-    "@types/react-dom": "18.2.7",
-    "clsx": "^2.0.0",
-    "diff": "^5.1.0",
-    "eslint": "8.48.0",
-    "eslint-config-next": "13.4.19",
-    "next": "13.4.19",
-    "openai": "^4.20.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-icons": "^4.11.0",
-    "typescript": "5.2.2"
+    "diff": "5.1.0",
+    "openai": "4.24.1"
   },
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.4.8",
-    "encoding": "^0.1.13"
+    "@iconify/svelte": "3.1.6",
+    "@sveltejs/adapter-auto": "3.0.0",
+    "@sveltejs/kit": "2.0.0",
+    "@sveltejs/vite-plugin-svelte": "3.0.0",
+    "@types/diff": "5.0.9",
+    "@types/eslint": "8.56.0",
+    "@typescript-eslint/eslint-plugin": "6.0.0",
+    "@typescript-eslint/parser": "6.0.0",
+    "eslint": "8.56.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-svelte": "2.35.1",
+    "prettier": "3.1.1",
+    "prettier-plugin-svelte": "3.1.2",
+    "svelte": "4.2.7",
+    "svelte-check": "3.6.0",
+    "tslib": "2.4.1",
+    "typescript": "5.3.3",
+    "vite": "5.0.3",
+    "vitest": "1.0.0"
   }
 }
